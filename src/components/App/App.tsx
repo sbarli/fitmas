@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components/macro';
 // components
-import FitmasCalendar from '../FitmasCalendar/FitmasCalendar';
+// import FitmasCalendar from '../FitmasCalendar/FitmasCalendar';
+import MealForm from '../MealForm/MealForm';
 
 // styled components
 const Wrapper = styled.div`
@@ -24,7 +25,8 @@ const App = () => {
       <header>
         <Title>Welcome to 25 Days of Fitmas!</Title>
       </header>
-      <FitmasCalendar />
+      {/* <FitmasCalendar /> */}
+      <MealForm />
     </Wrapper>
   );
 };
