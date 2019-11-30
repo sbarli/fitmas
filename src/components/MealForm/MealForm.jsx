@@ -6,6 +6,7 @@ import meals from '../../data/meals';
 // components
 import Datepicker from '../../libs/ui/forms/Datepicker/Datepicker';
 import Dropdown from '../../libs/ui/forms/Dropdown/Dropdown';
+import Textarea from '../../libs/ui/forms/Textarea/Textarea';
 import Button from '../../libs/ui/Button/Button';
 
 // styled components
@@ -27,7 +28,6 @@ const MealForm = () => {
     <Form
       onSubmit={onSubmit}
       render={({ handleSubmit, values }) => {
-        console.log('values: ', values);
         return (
           <form onSubmit={handleSubmit}>
             <h2>Meal Input Form</h2>
@@ -45,13 +45,29 @@ const MealForm = () => {
               && values.mealType
               && (
                 <Dropdown
-                  name="meal"
+                  name="mealItems"
                   label="Select Meal Items"
-                  options={meals[values.mealType].map(item => ({
-                    value: item,
-                    label: item,
-                  }))}
+                  options={[
+                    ...meals[values.mealType].map(item => ({
+                      value: item,
+                      label: item,
+                    })),
+                    {
+                      value: 'Other',
+                      label: 'Other',
+                    },
+                  ]}
                   multiple={true}
+                />
+              )
+            }
+            {values
+              && values.mealItems
+              && values.mealItems.indexOf('Other') !== -1
+              && (
+                <Textarea
+                  name="mealItemsOther"
+                  label="Add additional items, each on a new line"
                 />
               )
             }
@@ -62,12 +78,5 @@ const MealForm = () => {
     />
   );
 };
-
-/**
- * component notes:
- * - date: datepicker
- * - type: dropdown - 'Breakfast', 'Lunch', 'Dinner', 'Snack'
- * - meal: checkboxes - meal options for selected meal type
- */
 
 export default MealForm;
