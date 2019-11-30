@@ -5,9 +5,14 @@
   --code-font-stack: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
   --normal-font-size: 1.6rem;
   --small-font-size: 1.4rem;
+  --input-font-size: 1.3rem;
   --bold-font-weight: 600;
   /* border-related variables */
   --form-border: 2px solid #9EE6D6;
+  /* form-related variables */
+  --input-height: 4rem;
+  --input-width:  20rem;
+  --input-radius: 5rem;
 }
 
 /*
