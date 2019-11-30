@@ -10,7 +10,7 @@ import "react-datepicker/dist/react-datepicker.css";
 // styled components
 
 // helper functions
-const onSubmit = async (values: any) => {
+const onSubmit = async (values) => {
   console.log('form submitted', JSON.stringify(values, null, 2));
 };
 
