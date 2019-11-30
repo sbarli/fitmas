@@ -53,6 +53,7 @@ const Dropdown = ({
   const SelectField = (
     <Field
       name={name}
+      type="select"
       component="select"
       multiple={multiple}>
       {OptionsToRender}
