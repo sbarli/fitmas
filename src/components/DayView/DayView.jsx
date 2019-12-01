@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 // components
 import Header from '../../libs/ui/Header/Header';
-import Paragraph from '../../libs/ui/Paragraph/Paragraph';
+import ViewItemRow from '../ViewItemRow/ViewItemRow';
 
 // styled components
 import styled from 'styled-components/macro';
 const Wrapper = styled.div`
   width: 100%;
+  margin-top: 2rem;
 `;
 
 const ViewContainer = styled.div`
@@ -22,52 +23,87 @@ const View = styled.div`
   padding: 1rem 2rem;
 `;
 
-const Row = styled.div(({ first }) => `
-  ${!first ? 'margin-top: 1rem;' : ''}
-  display: grid;
-  grid-template-columns: 20% 20% 1fr;
-`);
-
-// helper functions
-const createFoodRow = (day, meal, isFirst = false) => {
-  console.log('isFirst: ', isFirst);
-  return (
-    <Row key={`${day}-${meal.mealType}`} first={isFirst}>
-      <div></div>
-      <div>
-        <Paragraph singleSpaced>{meal.mealType}</Paragraph>
-      </div>
-      <div>
-        <Paragraph singleSpaced>{meal.items.join(', ')}</Paragraph>
-      </div>
-    </Row>
-  );
-};
-
-const createExerciseRow = (day, exercise, isFirst = false) => {
-  console.log('isFirst: ', isFirst);
-  return (
-    <Row key={`${day}-${exercise.category}-${exercise.item}`} first={isFirst}>
-      <div></div>
-      <div>
-        <Paragraph singleSpaced>{exercise.category}</Paragraph>
-      </div>
-      <div>
-        <Paragraph singleSpaced>{exercise.item}</Paragraph>
-      </div>
-    </Row>
-  );
-};
-
-const DayView = ({ day, data: { food, exercise } }) => {
+const DayView = ({ day, data }) => {
+  const [food, updateFood] = useState(data.food);
+  const [exercise, updateExercise] = useState(data.exercise);
+  const checkChange = (type, checkName, checkVal) => {
+    switch (type) {
+      case 'food':
+        const mealToSearchFor = checkName.split('_')[1];
+        const updatedFood = Object.keys(food).reduce((updated, category) => ({
+          ...updated,
+          [category]: Object.assign(
+            {},
+            food[category],
+            category === mealToSearchFor ? { done: checkVal } : {}
+          ),
+        }), {});
+        updateFood(updatedFood);
+        break;
+      case 'exercise':
+        const splitName = checkName.split('_');
+        const exCat = splitName[1];
+        const exItem = splitName[2];
+        const updatedExercise = exercise.map(ex => (
+          ex.category === exCat && ex.item === exItem
+            ? Object.assign({}, ex, { done: checkVal })
+            : Object.assign({}, ex)
+        ));
+        updateExercise(updatedExercise);
+        break;
+      default:
+        console.log(`unknown value checked - type: ${type}, name: ${checkName}, value: ${checkVal}`);
+    }
+  };
+  const createExerciseRows = (data) => {
+    return data.map((exercise, i) => {
+      const exerciseData = {
+        category: exercise.category,
+        items: exercise.item,
+        name: `${dayText}_${exercise.category}_${exercise.item}`,
+        done: exercise.done,
+        checkChange,
+      };
+      return (
+        <ViewItemRow
+          key={exerciseData.name}
+          rowType="exercise"
+          day={dayText}
+          data={exerciseData}
+          isFirst={i === 0}
+        />
+      )
+    });
+  };
+  const createFoodRows = (food) => {
+    return Object.keys(food).map((category, i) => {
+      const details = food[category];
+      const mealData = {
+        category,
+        items: details.items.join(', '),
+        name: `${dayText}_${category}`,
+        done: details.done,
+        checkChange,
+      };
+      return (
+        <ViewItemRow
+          key={mealData.name}
+          rowType="food"
+          day={dayText}
+          data={mealData}
+          isFirst={i === 0}
+        />
+      )
+    });
+  };
   const DayHeader = typeof day === 'string'
     ? day
     : moment(day).format('ddd, MMM Do, YYYY');
   const dayText = typeof day === 'string'
-    ? day
-    : moment(day).format('YYYY-dd-MM');
-  const FoodItems = food.map((meal, i) => createFoodRow(dayText, meal, i === 0));
-  const ExerciseItems = exercise.map((item, i) => createExerciseRow(dayText, item, i === 0));
+    ? moment().format('YYYYMMDD')
+    : moment(day).format('YYYYMMDD');
+  const FoodItems = createFoodRows(food);
+  const ExerciseItems = createExerciseRows(exercise);
   return (
     <Wrapper>
       <Header size="h2" center>
@@ -89,7 +125,7 @@ const DayView = ({ day, data: { food, exercise } }) => {
 
 DayView.defaultProps = {
   data: {
-    food: [],
+    food: {},
     exercise: [],
   },
 };
@@ -100,7 +136,7 @@ DayView.propTypes = {
     PropTypes.instanceOf(Date),
   ]).isRequired,
   data: PropTypes.shape({
-    food: PropTypes.arrayOf(PropTypes.object),
+    food: PropTypes.object,
     exercise: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
 };
