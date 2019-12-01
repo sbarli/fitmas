@@ -5,6 +5,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "final-form": "^4.18.6",
+    "firebase-admin": "^8.8.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
     "path": "^0.12.7",
@@ -19,7 +20,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node ./server/server.js",
-    "dev": "NODE_ENV=development nodemon ./server/server.js && react-scripts start",
+    "dev": "GOOGLE_APPLICATION_CREDENTIALS=../../keys/fitmas-firebase-admin.json NODE_ENV=development nodemon ./server/server.js && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
