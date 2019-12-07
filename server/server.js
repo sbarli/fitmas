@@ -1,6 +1,8 @@
 const express = require('express');
 const moment = require('moment');
-const db = require('./model/firebase');
+const path = require('path');
+
+const planItemsController = require('./controllers/planItemsController');
 
 const app = express();
 const PORT = 8080;
@@ -10,74 +12,36 @@ const listeningCB = () => {
     : console.log(`${moment()}: default server listening on port ${PORT}`)
 };
 
-const processFirebaseDoc = doc => ({
-  id: doc.id,
-  ...doc.data(),
-});
+app.use(express.json());
 
 app.get('/api/users/:username/plan',
-  // get user
-  (req, res, next) => {
-    db.collection('users')
-      .where('username', '==', req.params.username)
-      .get()
-      .then((snapshot) => {
-        if (!snapshot
-          || !snapshot.docs
-          || !snapshot.docs.length) {
-          res.locals.getUserError = `no user record found for username: ${req.params.username}`;
-          console.log(res.locals.getUserError);
-          return next();
-        }
-        res.locals.user = processFirebaseDoc(snapshot.docs[0]);
-        return next();
-      })
-      .catch((err) => {
-        res.locals.getUserError = {
-          msg: `error getting user record for username: ${req.params.username}`,
-          err,
-        };
-        console.log(res.locals.getUserError);
-        return next();
-      });
-  },
-  // get user plan items
-  (req, res, next) => {
-    db.collection('plan_items')
-      .where('user.username', '==', req.params.username)
-      .get()
-      .then((snapshot) => {
-        if (!snapshot
-          || !snapshot.docs) {
-          res.locals.getPlanError = `no user record found for username: ${req.params.username}`;
-          console.log(res.locals.getPlanError);
-          return next();
-        }
-        res.locals.planItems = snapshot.docs.map(processFirebaseDoc);
-        return next();
-      })
-      .catch((err) => {
-        res.locals.getPlanError = {
-          msg: `error getting plan records for username: ${req.params.username}`,
-          err,
-        };
-        console.log(res.locals.getPlanError);
-        return next();
-      });
-  },
-  // return data
+  planItemsController.getPlan,
   (req, res) => {
-    if (!res.locals.user
-      || !res.locals.planItems) {
-      return res.status(400).json({
-        success: false,
-        data: { ...res.locals },
-      })
-    }
-    return res.status(200).json({
-      success: true,
-      planItems: [...res.locals.planItems],
-    })
+    return res.status(200).json({ plan: res.locals.plan });
+  },
+);
+
+app.post('/api/users/:username/plan',
+  planItemsController.addPlan,
+  planItemsController.getPlan,
+  (req, res) => {
+    return res.status(200).json({ plan: res.locals.plan });
+  },
+);
+
+app.post('/api/users/:username/item',
+  planItemsController.addPlanItem,
+  planItemsController.getPlan,
+  (req, res) => {
+    return res.status(200).json({ plan: res.locals.plan });
+  },
+);
+
+app.put('/api/users/:username/item/:itemId',
+  planItemsController.updatePlanItem,
+  planItemsController.getPlan,
+  (req, res) => {
+    return res.status(200).json({ plan: res.locals.plan });
   },
 );
 
