@@ -23,7 +23,8 @@
     "dev": "GOOGLE_APPLICATION_CREDENTIALS=../../keys/fitmas-firebase-admin.json NODE_ENV=development nodemon ./server/server.js && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "backend": "GOOGLE_APPLICATION_CREDENTIALS=../../keys/fitmas-firebase-admin.json NODE_ENV=development nodemon ./server/server.js"
   },
   "eslintConfig": {
     "extends": "react-app"
