@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components/macro';
 
 const StyledLabel = styled.label(({ inline }) => `
+  font-size: var(--normal-font-size);
   font-weight: var(--bold-font-weight);
   margin-right: ${inline ? "1rem" : "0"};
 `);
