@@ -6,8 +6,11 @@ import styled from 'styled-components/macro';
 
 const themes = {
   green: `
-    color: green;
-    background: white;
+    color: white;
+    background: green;
+    border: 1px solid darkgreen;
+    border-radius: var(--input-radius);
+    padding: 5px;
   `,
   transparent: `
     color: black;
@@ -19,6 +22,10 @@ const themes = {
 
 const ButtonWrapper = styled.button(({ theme }) => `
   ${themes[theme]}
+  width: 15rem;
+  height: 3.5rem;
+  font-weight: var(--bold-font-weight);
+  font-size: var(--normal-font-size);
 `);
 
 const Button = (props) => {
