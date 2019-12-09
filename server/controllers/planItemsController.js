@@ -139,7 +139,7 @@ planItemsController.updatePlanItem = (req, res, next) => {
 
   // ready to create new plan item in db
   db.collection('plan_items')
-    .where('id', '==', req.body.item.id)
+    .doc(req.params.itemId)
     .update(updatedItem)
     .then(snapshot => {
       if (!snapshot) {
