@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node ./server/server.js",
-    "dev": "GOOGLE_APPLICATION_CREDENTIALS=../../keys/fitmas-firebase-admin.json NODE_ENV=development nodemon ./server/server.js && react-scripts start",
+    "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
