@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import MealForm from './MealForm';
+import WorkoutFormFields from './WorkoutFormFields';
 
 it('renders without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<MealForm />, div);
+  ReactDOM.render(<WorkoutFormFields />, div);
   ReactDOM.unmountComponentAtNode(div);
 });
