@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 // import moment from 'moment';
 // import 'moment-timezone';
 // components
-import Header from '../../libs/ui/Header/Header';
 import Login from '../Login/Login';
-import FitmasCalendar from '../FitmasCalendar/FitmasCalendar';
 import DayView from '../DayView/DayView';
-// // assets
-// import dummyData from '../../data/dummy';
+import PlanItemForm from '../PlanItemForm/PlanItemForm';
+import FitmasCalendar from '../FitmasCalendar/FitmasCalendar';
+import Button from '../../libs/ui/Button/Button';
+import Header from '../../libs/ui/Header/Header';
 
 // styled components
 import styled from 'styled-components/macro';
@@ -25,6 +25,7 @@ const Wrapper = styled.div`
 const App = () => {
   const [username, setUsername] = useState('');
   const [plan, setPlan] = useState([]);
+  const [showItemForm, setShowItemForm] = useState(false);
   const usernameSubmitted = (data) => {
     fetch(`/api/users/${data.username}/plan`)
       .then(res => res.json())
@@ -55,6 +56,27 @@ const App = () => {
       }
       {username &&
         <div>
+          {!showItemForm
+            && (<Button
+              type="button"
+              theme="transparent"
+              onClick={() => setShowItemForm(true)}>
+              Add Item
+            </Button>)
+          }
+          {showItemForm
+            && (
+              <div>
+                <Button
+                  type="button"
+                  theme="transparent"
+                  onClick={() => setShowItemForm(false)}>
+                  Close Add Item
+                </Button>
+                <PlanItemForm />
+              </div>
+            )
+          }
           <DayView
             day="2019-12-01"
             plan={plan}
@@ -63,7 +85,7 @@ const App = () => {
           <FitmasCalendar plan={plan} />
         </div>
       }
-    </Wrapper>
+    </Wrapper >
   );
 };
 
