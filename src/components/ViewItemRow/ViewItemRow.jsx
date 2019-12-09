@@ -13,7 +13,7 @@ const Row = styled.div(({ first }) => `
   grid-template-columns: 20% 20% 1fr;
 `);
 
-const ViewItemRow = ({ rowType, day, data, isFirst }) => {
+const ViewItemRow = ({ day, data, isFirst }) => {
   return (
     <Row first={isFirst}>
       <div>
@@ -23,7 +23,7 @@ const ViewItemRow = ({ rowType, day, data, isFirst }) => {
             type="checkbox"
             value={`${data.done}`}
             checked={data.done}
-            onChange={(e) => data.checkChange(rowType, data.name, e.target.checked)}
+            onChange={(e) => data.checkChange(data.id, e.target.checked)}
           />
         </Label>
       </div>
@@ -44,6 +44,7 @@ ViewItemRow.defaultProps = {
 ViewItemRow.propTypes = {
   day: PropTypes.string.isRequired,
   data: PropTypes.shape({
+    id: PropTypes.string.isRequired,
     category: PropTypes.string.isRequired,
     items: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,

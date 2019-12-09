@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 // components
@@ -7,6 +7,7 @@ import ViewItemRow from '../ViewItemRow/ViewItemRow';
 
 // styled components
 import styled from 'styled-components/macro';
+
 const Wrapper = styled.div`
   width: 100%;
   margin-top: 2rem;
@@ -23,91 +24,101 @@ const View = styled.div`
   padding: 1rem 2rem;
 `;
 
-const DayView = ({ day, data }) => {
-  const [food, updateFood] = useState(data.food);
-  const [exercise, updateExercise] = useState(data.exercise);
-  const checkChange = (type, checkName, checkVal) => {
-    switch (type) {
-      case 'food':
-        const mealToSearchFor = checkName.split('_')[1];
-        const updatedFood = Object.keys(food).reduce((updated, category) => ({
-          ...updated,
-          [category]: Object.assign(
-            {},
-            food[category],
-            category === mealToSearchFor ? { done: checkVal } : {}
-          ),
-        }), {});
-        updateFood(updatedFood);
-        break;
-      case 'exercise':
-        const splitName = checkName.split('_');
-        const exCat = splitName[1];
-        const exItem = splitName[2];
-        const updatedExercise = exercise.map(ex => (
-          ex.category === exCat && ex.item === exItem
-            ? Object.assign({}, ex, { done: checkVal })
-            : Object.assign({}, ex)
-        ));
-        updateExercise(updatedExercise);
-        break;
-      default:
-        console.log(`unknown value checked - type: ${type}, name: ${checkName}, value: ${checkVal}`);
+const DayView = ({ day, plan, username }) => {
+  const [food, updateFood] = useState([]);
+  const [exercise, updateExercise] = useState([]);
+  const [dayHeader, updateDayHeader] = useState('');
+  const [dayText, updateDayText] = useState('');
+  useEffect(() => {
+    const date = moment(day);
+    updateDayHeader(date.clone().format('ddd, MMM Do, YYYY'))
+    updateDayText(date.clone().format('YYYYMMDD'));
+    const foodForDate = [];
+    const exerciseForDate = [];
+    plan
+      .filter(item => moment(item.date).isSame(date))
+      .forEach(data => {
+        if (data.type === 'food') foodForDate.push(data);
+        else if (data.type === 'exercise') exerciseForDate.push(data);
+      });
+    if (foodForDate.length) updateFood(foodForDate);
+    if (exerciseForDate) updateExercise(exerciseForDate);
+  }, [day, plan]);
+  const togglePlanItemComplete = (username, id, done) => {
+    return fetch(`/api/users/${username}/item/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        item: { done },
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+      .then(res => {
+        if (res.status !== 200) return Promise.reject({ status: res.status, msg: `error toggling item ${id} to ${done}` });
+        return res.json();
+      })
+      .then(res => ({ ...res, status: 200 }))
+      .catch(err => err);
+  };
+  const foodUpdated = async (updatedId, isDone) => {
+    const successfulToggle = await togglePlanItemComplete(username, updatedId, isDone);
+    if (successfulToggle.status === 200) {
+      const updatedFood = food.map(meal => (
+        meal.id === updatedId
+          ? Object.assign({}, meal, { done: isDone })
+          : Object.assign({}, meal)
+      ));
+      updateFood(updatedFood);
     }
   };
-  const createExerciseRows = (data) => {
-    return data.map((exercise, i) => {
-      const exerciseData = {
-        category: exercise.category,
-        items: exercise.item,
-        name: `${dayText}_${exercise.category}_${exercise.item}`,
-        done: exercise.done,
-        checkChange,
-      };
-      return (
-        <ViewItemRow
-          key={exerciseData.name}
-          rowType="exercise"
-          day={dayText}
-          data={exerciseData}
-          isFirst={i === 0}
-        />
-      )
-    });
+  const exerciseUpdated = async (updatedId, isDone) => {
+    const successfulToggle = await togglePlanItemComplete(username, updatedId, isDone);
+    if (successfulToggle.status === 200) {
+      const updatedExercise = exercise.map(ex => (
+        ex.id === updatedId
+          ? Object.assign({}, ex, { done: isDone })
+          : Object.assign({}, ex)
+      ));
+      updateExercise(updatedExercise);
+    }
   };
-  const createFoodRows = (food) => {
-    return Object.keys(food).map((category, i) => {
-      const details = food[category];
-      const mealData = {
-        category,
-        items: details.items.join(', '),
-        name: `${dayText}_${category}`,
-        done: details.done,
-        checkChange,
-      };
-      return (
-        <ViewItemRow
-          key={mealData.name}
-          rowType="food"
-          day={dayText}
-          data={mealData}
-          isFirst={i === 0}
-        />
-      )
-    });
-  };
-  const DayHeader = typeof day === 'string'
-    ? day
-    : moment(day).format('ddd, MMM Do, YYYY');
-  const dayText = typeof day === 'string'
-    ? moment().format('YYYYMMDD')
-    : moment(day).format('YYYYMMDD');
-  const FoodItems = createFoodRows(food);
-  const ExerciseItems = createExerciseRows(exercise);
+  const FoodItems = food.map((meal, i) => (
+    <ViewItemRow
+      key={meal.id}
+      rowType="food"
+      day={dayText}
+      data={{
+        id: meal.id,
+        category: meal.category,
+        items: meal.items.join(', '),
+        name: `food_${meal.category}_${meal.id}`,
+        done: meal.done,
+        checkChange: foodUpdated,
+      }}
+      isFirst={i === 0}
+    />
+  ));
+  const ExerciseItems = exercise.map((ex, i) => (
+    <ViewItemRow
+      key={ex.id}
+      rowType="food"
+      day={dayText}
+      data={{
+        id: ex.id,
+        category: ex.category,
+        items: ex.item,
+        name: `food_${ex.category}_${ex.id}`,
+        done: ex.done,
+        checkChange: exerciseUpdated,
+      }}
+      isFirst={i === 0}
+    />
+  ));
   return (
     <Wrapper>
       <Header size="h2" center>
-        {DayHeader}
+        {dayHeader}
       </Header>
       <ViewContainer>
         <View>
@@ -123,22 +134,25 @@ const DayView = ({ day, data }) => {
   );
 };
 
-DayView.defaultProps = {
-  data: {
-    food: {},
-    exercise: [],
-  },
-};
-
 DayView.propTypes = {
+  username: PropTypes.string.isRequired,
   day: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.instanceOf(Date),
   ]).isRequired,
-  data: PropTypes.shape({
-    food: PropTypes.object,
-    exercise: PropTypes.arrayOf(PropTypes.object),
-  }).isRequired,
+  plan: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.any.isRequired,
+      type: PropTypes.oneOf([
+        'food', 'exercise',
+      ]).isRequired,
+      category: PropTypes.string.isRequired,
+      done: PropTypes.bool.isRequired,
+      item: PropTypes.string,
+      items: PropTypes.arrayOf(PropTypes.string),
+      notes: PropTypes.string,
+    })
+  ).isRequired,
 };
 
 export default DayView;
